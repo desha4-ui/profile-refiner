@@ -1,11 +1,19 @@
-import { useState, useMemo } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { projects, projectFilters } from "@/data";
 import { Reveal } from "@/components/ui/Reveal";
-import { ProjectCard } from "@/components/ui/ProjectCard";
+import { ProjectCard, type ProjectView } from "@/components/ui/ProjectCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  Rows3,
+  X,
+  ArrowUpDown,
+} from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
@@ -15,157 +23,273 @@ export const Route = createFileRoute("/projects/")({
       { title: "All Projects | Marketplace Systems Architect" },
       {
         name: "description",
-        content: "View all 15+ projects built for multi-vendor marketplaces, e-commerce platforms, and high-scale systems.",
+        content:
+          "Browse every project: multi-vendor marketplaces, e-commerce platforms and high-scale systems, with search, filters and sorting.",
       },
+      { property: "og:title", content: "All Projects | Marketplace Systems Architect" },
+      {
+        property: "og:description",
+        content:
+          "Browse every project: multi-vendor marketplaces, e-commerce platforms and high-scale systems.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "/projects" }],
   }),
   component: ProjectsPage,
 });
 
-const ITEMS_PER_PAGE = 6;
+const SORTS = [
+  { value: "default", label: "Featured" },
+  { value: "az", label: "Title A–Z" },
+  { value: "za", label: "Title Z–A" },
+  { value: "category", label: "Category" },
+  { value: "tech", label: "Most tech" },
+] as const;
+
+type SortValue = (typeof SORTS)[number]["value"];
 
 export function ProjectsPage() {
   const [filter, setFilter] = useState<(typeof projectFilters)[number]>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<SortValue>("default");
+  const [view, setView] = useState<ProjectView>("grid");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter and search projects
+  const perPage = view === "grid" ? 9 : 6;
+
+  const counts = useMemo(() => {
+    const map: Record<string, number> = { All: projects.length };
+    for (const p of projects) map[p.category] = (map[p.category] ?? 0) + 1;
+    return map;
+  }, []);
+
   const filtered = useMemo(() => {
     let result = filter === "All" ? projects : projects.filter((p) => p.category === filter);
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(query) ||
           p.description.toLowerCase().includes(query) ||
           p.category.toLowerCase().includes(query) ||
+          (p.client?.toLowerCase().includes(query) ?? false) ||
           p.tech.some((t) => t.toLowerCase().includes(query))
       );
     }
 
-    return result;
-  }, [filter, searchQuery]);
+    const sorted = [...result];
+    if (sort === "az") sorted.sort((a, b) => a.title.localeCompare(b.title));
+    if (sort === "za") sorted.sort((a, b) => b.title.localeCompare(a.title));
+    if (sort === "category")
+      sorted.sort((a, b) => a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
+    if (sort === "tech") sorted.sort((a, b) => b.tech.length - a.tech.length);
+    return sorted;
+  }, [filter, searchQuery, sort]);
 
-  // Pagination
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedProjects = filtered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
 
-  const handleFilterChange = (newFilter: typeof filter) => {
-    setFilter(newFilter);
-    setCurrentPage(1); // Reset to first page
-    setSearchQuery(""); // Reset search
-  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchQuery, sort, view]);
 
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page
-  };
+  const page = Math.min(currentPage, totalPages);
+  const paginatedProjects = filtered.slice((page - 1) * perPage, page * perPage);
+  const hasActiveFilters = filter !== "All" || searchQuery.trim().length > 0 || sort !== "default";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1">
-        <section className="py-20">
+        <section className="py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-5">
-            {/* Header */}
             <Reveal>
-              <div className="mb-16 text-center">
-                <h1 className="text-4xl font-bold md:text-5xl">All Projects</h1>
+              <header className="mb-10 max-w-2xl">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+                  Portfolio
+                </span>
+                <h1 className="mt-3 text-4xl font-bold md:text-5xl">All Projects</h1>
                 <p className="mt-4 text-lg text-muted-foreground">
-                  {filtered.length} {filtered.length === 1 ? "project" : "projects"} found
+                  Marketplaces, storefronts and dashboards — search, filter and sort the full
+                  catalogue.
                 </p>
-              </div>
+              </header>
             </Reveal>
 
-            {/* Search Input */}
-            <Reveal className="mb-8">
-              <div className="relative">
-                <label htmlFor="project-search" className="sr-only">
-                  Search projects
-                </label>
-                <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  id="project-search"
-                  type="text"
-                  placeholder="Search projects by name, description, or technology..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg bg-secondary/40 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all"
-                />
-              </div>
-            </Reveal>
+            {/* Toolbar: search + sort + view, all in one line on desktop */}
+            <div className="sticky top-16 z-20 -mx-5 mb-6 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+              <div className="glass grid grid-cols-1 gap-3 rounded-2xl border border-border/60 p-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
+                <div className="relative min-w-0">
+                  <label htmlFor="project-search" className="sr-only">
+                    Search projects
+                  </label>
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    id="project-search"
+                    type="search"
+                    placeholder="Search by name, tech, client…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-11 w-full rounded-xl border border-border bg-secondary/40 pl-10 pr-9 text-sm text-foreground transition-all placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/50"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-muted-foreground transition-colors hover:text-gold"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
 
-            {/* Filters */}
-            <Reveal className="mb-12 flex flex-wrap justify-center gap-2.5">
+                <div className="relative">
+                  <label htmlFor="project-sort" className="sr-only">
+                    Sort projects
+                  </label>
+                  <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <select
+                    id="project-sort"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as SortValue)}
+                    className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-border bg-secondary/40 pl-10 pr-8 text-sm font-medium text-foreground transition-all focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/50 md:w-44"
+                  >
+                    {SORTS.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 rotate-90 text-muted-foreground" />
+                </div>
+
+                <div
+                  role="group"
+                  aria-label="View mode"
+                  className="flex h-11 shrink-0 items-center gap-1 rounded-xl border border-border bg-secondary/40 p-1"
+                >
+                  <ViewButton
+                    active={view === "grid"}
+                    onClick={() => setView("grid")}
+                    label="Grid view"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </ViewButton>
+                  <ViewButton
+                    active={view === "list"}
+                    onClick={() => setView("list")}
+                    label="List view"
+                  >
+                    <Rows3 className="size-4" />
+                  </ViewButton>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter chips */}
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {projectFilters.map((f) => (
                 <button
                   key={f}
-                  onClick={() => handleFilterChange(f)}
+                  onClick={() => setFilter(f)}
                   aria-pressed={filter === f}
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                     filter === f
                       ? "bg-gold text-gold-foreground"
                       : "border border-border bg-secondary/40 text-muted-foreground hover:border-gold/50 hover:text-gold"
                   }`}
                 >
                   {f}
+                  {counts[f] != null && (
+                    <span className="ml-1.5 text-xs opacity-70">{counts[f]}</span>
+                  )}
                 </button>
               ))}
-            </Reveal>
+            </div>
 
-            {/* Projects Grid */}
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <p>
+                <span className="font-semibold text-foreground">{filtered.length}</span>{" "}
+                {filtered.length === 1 ? "project" : "projects"}
+                {totalPages > 1 && ` · page ${page} of ${totalPages}`}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={() => {
+                    setFilter("All");
+                    setSearchQuery("");
+                    setSort("default");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-semibold transition-colors hover:border-gold/50 hover:text-gold"
+                >
+                  <X className="size-3.5" />
+                  Reset
+                </button>
+              )}
+            </div>
+
             {paginatedProjects.length > 0 ? (
               <>
-                <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
+                <motion.div
+                  layout
+                  className={
+                    view === "grid"
+                      ? "mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                      : "mb-12 flex flex-col gap-4"
+                  }
+                >
                   <AnimatePresence mode="popLayout">
                     {paginatedProjects.map((project, index) => (
-                      <ProjectCard key={project.id} project={project} index={index} />
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        index={index}
+                        view={view}
+                      />
                     ))}
                   </AnimatePresence>
                 </motion.div>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-4">
+                  <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-3">
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-gold/50 hover:enabled:text-gold"
+                      onClick={() => setCurrentPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40 hover:enabled:border-gold/50 hover:enabled:text-gold"
                     >
                       <ChevronLeft className="size-4" />
                       Previous
                     </button>
 
                     <div className="flex items-center gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                         <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`size-10 rounded-lg font-semibold transition-all ${
-                            currentPage === page
+                          key={p}
+                          onClick={() => setCurrentPage(p)}
+                          aria-current={p === page ? "page" : undefined}
+                          className={`size-10 rounded-xl text-sm font-semibold transition-all ${
+                            p === page
                               ? "bg-gold text-gold-foreground"
                               : "border border-border bg-secondary/40 text-muted-foreground hover:border-gold/50 hover:text-gold"
                           }`}
                         >
-                          {page}
+                          {p}
                         </button>
                       ))}
                     </div>
 
                     <button
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-gold/50 hover:enabled:text-gold"
+                      onClick={() => setCurrentPage(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages}
+                      className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40 hover:enabled:border-gold/50 hover:enabled:text-gold"
                     >
                       Next
                       <ChevronRight className="size-4" />
                     </button>
-                  </div>
+                  </nav>
                 )}
               </>
             ) : (
@@ -176,5 +300,34 @@ export function ProjectsPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function ViewButton({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
+      title={label}
+      className={`inline-flex size-9 items-center justify-center rounded-lg transition-all ${
+        active
+          ? "bg-gold text-gold-foreground"
+          : "text-muted-foreground hover:text-gold"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

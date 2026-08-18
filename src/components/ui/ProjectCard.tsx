@@ -3,80 +3,146 @@ import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Project } from "@/data/projects";
 
+export type ProjectView = "grid" | "list";
+
 interface ProjectCardProps {
   project: Project;
   index: number;
+  view?: ProjectView;
 }
 
-export function ProjectCard({ project, index }: ProjectCardProps) {
+export function ProjectCard({ project, index, view = "grid" }: ProjectCardProps) {
+  if (view === "list") return <ProjectRow project={project} index={index} />;
+
   return (
-    <motion.div
+    <motion.article
       layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group glass relative flex h-full flex-col overflow-hidden rounded-2xl transition-all hover:-translate-y-1.5 hover:glow-gold"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.35, delay: Math.min(index, 6) * 0.04 }}
+      className="group glass relative flex h-full flex-col overflow-hidden rounded-3xl border border-border/60 transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/40 hover:glow-gold"
     >
-      {/* Image Header */}
       <ProjectCardImage project={project} />
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-xl font-bold">{project.title}</h3>
-        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-          {project.description}
-        </p>
+      <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
+        <header className="min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="min-w-0 text-lg font-bold leading-snug sm:text-xl">
+              {project.title}
+            </h3>
+            {project.status && (
+              <span className="shrink-0 rounded-full border border-accent/25 bg-accent/10 px-2.5 py-0.5 text-[11px] font-semibold text-accent">
+                {project.status}
+              </span>
+            )}
+          </div>
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            {project.description}
+          </p>
+        </header>
 
-        {/* Type Badge */}
-        <div className="my-4 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           <Badge variant="gold">{project.type}</Badge>
           {project.client && <Badge variant="accent">{project.client}</Badge>}
         </div>
 
-        {/* Tech Stack */}
         <TechStackPreview techs={project.tech} />
 
-        {/* Links Section */}
-        <div className="mt-auto space-y-3">
-          {/* Live/Details Links */}
-          <div className="flex flex-wrap gap-2">
-            {project.live && project.live !== "#" && (
-              <a
-                href={project.live}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-semibold text-gold border border-gold/20 hover:bg-gold/20 transition-all"
-              >
-                <ExternalLink className="size-3.5" />
-                Live Project
-              </a>
-            )}
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-2 text-xs font-semibold text-accent border border-accent/20 hover:bg-accent/20 transition-all"
-              >
-                <Github className="size-3.5" />
-                GitHub
-              </a>
-            )}
-          </div>
-
-          {/* View Details Link */}
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/60 pt-4">
           <Link
             to="/projects/$id"
             params={{ id: project.id }}
             className="inline-flex items-center gap-2 text-sm font-semibold text-gold transition-all hover:gap-3"
           >
-            View Details
+            View details
             <ArrowRight className="size-4" />
           </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            {project.live && project.live !== "#" && (
+              <IconLink href={project.live} label={`Open live site for ${project.title}`}>
+                <ExternalLink className="size-4" />
+              </IconLink>
+            )}
+            {project.github && (
+              <IconLink href={project.github} label={`Open GitHub repo for ${project.title}`}>
+                <Github className="size-4" />
+              </IconLink>
+            )}
+          </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
+  );
+}
+
+function ProjectRow({ project, index }: { project: Project; index: number }) {
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.3, delay: Math.min(index, 6) * 0.03 }}
+      className="group glass grid grid-cols-1 gap-5 overflow-hidden rounded-3xl border border-border/60 p-4 transition-all duration-300 hover:border-gold/40 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-center"
+    >
+      <div className="overflow-hidden rounded-2xl">
+        <ProjectCardImage project={project} compact />
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-lg font-bold">{project.title}</h3>
+          <Badge variant="gold">{project.type}</Badge>
+          {project.client && <Badge variant="accent">{project.client}</Badge>}
+        </div>
+        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
+        <div className="mt-3">
+          <TechStackPreview techs={project.tech} limit={5} />
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <Link
+            to="/projects/$id"
+            params={{ id: project.id }}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gold transition-all hover:gap-3"
+          >
+            View details
+            <ArrowRight className="size-4" />
+          </Link>
+          {project.live && project.live !== "#" && (
+            <IconLink href={project.live} label={`Open live site for ${project.title}`}>
+              <ExternalLink className="size-4" />
+            </IconLink>
+          )}
+          {project.github && (
+            <IconLink href={project.github} label={`Open GitHub repo for ${project.title}`}>
+              <Github className="size-4" />
+            </IconLink>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function IconLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="inline-flex size-9 items-center justify-center rounded-xl border border-border bg-secondary/40 text-muted-foreground transition-all hover:border-gold/50 hover:text-gold"
+    >
+      {children}
+    </a>
   );
 }
 
@@ -102,16 +168,18 @@ export function Badge({ children, variant = "gold" }: BadgeProps) {
 
 interface ProjectCardImageProps {
   project: Project;
+  compact?: boolean;
 }
 
-export function ProjectCardImage({ project }: ProjectCardImageProps) {
+export function ProjectCardImage({ project, compact = false }: ProjectCardImageProps) {
   return (
-    <div className="relative h-44 overflow-hidden bg-black/20">
+    <div className={`relative overflow-hidden bg-black/20 ${compact ? "h-36" : "h-48"}`}>
       {project.image ? (
         <img
           src={project.image}
-          alt={project.title}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          alt={`${project.title} preview`}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
         />
       ) : (
         <div
@@ -123,8 +191,8 @@ export function ProjectCardImage({ project }: ProjectCardImageProps) {
           }}
         />
       )}
-      <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:opacity-0" />
-      <span className="absolute left-4 top-4 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+      <span className="absolute left-3 top-3 rounded-full border border-border/40 bg-background/70 px-3 py-1 text-[11px] font-semibold text-foreground backdrop-blur">
         {project.category}
       </span>
     </div>
@@ -138,17 +206,17 @@ interface TechStackPreviewProps {
 
 export function TechStackPreview({ techs, limit = 3 }: TechStackPreviewProps) {
   return (
-    <div className="mb-4 flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
       {techs.slice(0, limit).map((tech) => (
         <span
           key={tech}
-          className="rounded-md bg-background/50 px-2 py-1 text-xs text-muted-foreground"
+          className="rounded-md border border-border/50 bg-background/50 px-2 py-1 text-xs text-muted-foreground"
         >
           {tech}
         </span>
       ))}
       {techs.length > limit && (
-        <span className="rounded-md bg-background/50 px-2 py-1 text-xs text-gold">
+        <span className="rounded-md border border-gold/20 bg-background/50 px-2 py-1 text-xs text-gold">
           +{techs.length - limit}
         </span>
       )}
