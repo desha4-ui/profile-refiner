@@ -6,14 +6,18 @@ import { useI18n } from "@/lib/i18n";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LangToggle } from "@/components/ui/LangToggle";
 
-type NavLink = { id: string; key: string; to: "/" | "/projects"; hash?: string };
+type NavLink = {
+  id: string;
+  key: string;
+  to: "/" | "/projects" | "/about" | "/skills" | "/experience" | "/contact";
+};
 
 const links: NavLink[] = [
   { id: "projects", key: "nav.projects", to: "/projects" },
-  { id: "about", key: "nav.about", to: "/", hash: "about" },
-  { id: "skills", key: "nav.skills", to: "/", hash: "skills" },
-  { id: "experience", key: "nav.experience", to: "/", hash: "experience" },
-  { id: "contact", key: "nav.contact", to: "/", hash: "contact" },
+  { id: "about", key: "nav.about", to: "/about" },
+  { id: "skills", key: "nav.skills", to: "/skills" },
+  { id: "experience", key: "nav.experience", to: "/experience" },
+  { id: "contact", key: "nav.contact", to: "/contact" },
 ];
 
 const socials = [
@@ -33,21 +37,13 @@ function NavItem({
   className: string;
   children: React.ReactNode;
 }) {
-  if (link.hash) {
-    return (
-      <Link
-        to={link.to}
-        hash={link.hash}
-        hashScrollIntoView={{ behavior: "smooth" }}
-        onClick={onClick}
-        className={className}
-      >
-        {children}
-      </Link>
-    );
-  }
   return (
-    <Link to={link.to} onClick={onClick} className={className}>
+    <Link
+      to={link.to}
+      onClick={onClick}
+      className={className}
+      activeProps={{ "data-active": "true" }}
+    >
       {children}
     </Link>
   );
