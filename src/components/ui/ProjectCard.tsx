@@ -191,7 +191,7 @@ export function ProjectCardImage({ project, compact = false }: ProjectCardImageP
           }}
         />
       )}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
       <span className="absolute left-3 top-3 rounded-full border border-border/40 bg-background/70 px-3 py-1 text-[11px] font-semibold text-foreground backdrop-blur">
         {project.category}
       </span>
