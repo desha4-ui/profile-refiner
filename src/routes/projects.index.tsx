@@ -163,10 +163,10 @@ export function ProjectsPage() {
                       aria-label="Sort projects"
                       className="h-11 w-full gap-2 rounded-xl border-border bg-secondary/40 px-3.5 text-sm font-medium text-foreground shadow-none transition-all hover:border-gold/40 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 data-[state=open]:border-gold/50 md:w-48"
                     >
-                      <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap text-left">
+                      <div className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap text-left">
                         <ArrowUpDown className="size-4 shrink-0 text-muted-foreground" />
                         <SelectValue />
-                      </span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-border/70">
                       {SORTS.map((s) => (
