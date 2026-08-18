@@ -9,6 +9,8 @@ export function ExperiencePreview() {
   const { tr } = useI18n();
   const current = experience[0];
 
+  if (!current) return null;
+
   return (
     <section id="experience" className="scroll-mt-24 py-24">
       <div className="mx-auto max-w-5xl px-5">
