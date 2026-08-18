@@ -16,6 +16,13 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/projects/")({
   head: () => ({
@@ -150,20 +157,29 @@ export function ProjectsPage() {
                   <label htmlFor="project-sort" className="sr-only">
                     Sort projects
                   </label>
-                  <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <select
-                    id="project-sort"
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as SortValue)}
-                    className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-border bg-secondary/40 pl-10 pr-8 text-sm font-medium text-foreground transition-all focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/50 md:w-44"
-                  >
-                    {SORTS.map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronRight className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 rotate-90 text-muted-foreground" />
+                  <Select value={sort} onValueChange={(v) => setSort(v as SortValue)}>
+                    <SelectTrigger
+                      id="project-sort"
+                      aria-label="Sort projects"
+                      className="h-11 w-full gap-2 rounded-xl border-border bg-secondary/40 px-3.5 text-sm font-medium text-foreground shadow-none transition-all hover:border-gold/40 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 data-[state=open]:border-gold/50 md:w-48"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap text-left">
+                        <ArrowUpDown className="size-4 shrink-0 text-muted-foreground" />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-border/70">
+                      {SORTS.map((s) => (
+                        <SelectItem
+                          key={s.value}
+                          value={s.value}
+                          className="cursor-pointer rounded-lg text-sm focus:bg-gold/10 focus:text-gold"
+                        >
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div
