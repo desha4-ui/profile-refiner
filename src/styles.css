@@ -288,6 +288,110 @@
   letter-spacing: 0.35em;
 }
 
+/* --- Fluid type ramp -----------------------------------------------------
+ * Every heading in the app picks one of these `type-*` steps. They own the
+ * size, leading, weight, case and tracking together, so no component mixes
+ * its own `text-5xl font-bold uppercase tracking-tight` combination and no
+ * two pages disagree about what an H2 looks like.
+ * The display family is inherited from the base `h1..h6` rule below; use
+ * `font-display` explicitly only on non-heading elements. */
+@utility type-display {
+  font-family: var(--font-display);
+  font-size: clamp(3.25rem, 10vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+@utility type-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+@utility type-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+@utility type-h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-h4 {
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+
+/* Body copy steps. `type-lead` is the paragraph under a heading. */
+@utility type-lead {
+  font-family: var(--font-sans);
+  font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+@utility type-body {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+/* Uppercase UI label (buttons, nav, chips) — one shape for all of them. */
+@utility type-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+@utility type-micro {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Handwritten accent voice — the single place the script face is allowed. */
+@utility type-script {
+  font-family: var(--font-script);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Heading entrance: rises and settles its tracking. Pair with `--type-delay`
+ * for staggered lines. Honors reduced motion via the block at the bottom. */
+@utility type-in {
+  animation: type-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--type-delay, 0s);
+}
+
 
 @utility grid-bg {
   background-image: radial-gradient(
