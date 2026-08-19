@@ -1,124 +1,95 @@
-import { motion } from "framer-motion";
-import { Play, Download } from "lucide-react";
+import { Download, Play, Trophy } from "lucide-react";
+import heroIso from "@/assets/hero-iso.webp";
+import heroIsoAvif from "@/assets/hero-iso.avif";
 import { useI18n } from "@/lib/i18n";
-import heroIso from "@/assets/hero-iso.png";
-
-const marqueeItems = [
-  "Multi-vendor",
-  "Real-time bidding",
-  "Payments",
-  "Search & ranking",
-  "Logistics",
-  "Analytics",
-];
 
 export function Hero() {
-  const { tr } = useI18n();
-
-  const whatsappLink = "https://wa.me/+201067358073";
-
-  const downloadCV = () => {
-    const link = document.createElement("a");
-    link.href = "/cv/Mostafa_Samir_CV.pdf";
-    link.download = "Mostafa_Samir_CV.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const { tr, dir } = useI18n();
 
   return (
-    <section className="relative overflow-hidden pb-16 pt-32 sm:pt-40">
-      <div className="grid-bg pointer-events-none absolute inset-0 opacity-30" />
-      <div className="pointer-events-none absolute -left-24 top-24 size-[28rem] rounded-full bg-gold/20 blur-[120px] animate-blob" />
-
+    <section className="relative overflow-hidden bg-background pb-16 pt-32 sm:pt-36 md:pt-40 text-foreground select-none">
       <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 lg:grid-cols-2">
-        <div className="relative z-10">
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-5 text-[11px] font-bold uppercase tracking-[0.4em] text-gold"
-          >
-            {tr("hero.role")}
-          </motion.p>
+        {/* Left Column Text & Action */}
+        <div className="relative z-10 text-center lg:text-start">
+          {/* Eyebrow Label */}
+          <p className="enter-up mb-4 font-sans text-xs font-black tracking-[0.35em] text-primary uppercase">
+            {tr("hero.eyebrow")}
+          </p>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, delay: 0.08 }}
-            className="font-display text-[clamp(2.2rem,4.4vw,4rem)] font-black uppercase leading-[0.92] text-foreground"
+          {/* Large Oswald Headline */}
+          <h1
+            style={{ animationDelay: "0.08s" }}
+            className="enter-up font-display text-[64px] sm:text-[84px] md:text-[104px] font-bold uppercase leading-[0.85] text-foreground tracking-normal"
           >
-            {tr("hero.title1")}
+            {tr("hero.name.first")}
             <br />
-            <span className="text-gold">{tr("hero.title2")}</span>
-          </motion.h1>
+            {tr("hero.name.last")}
+            <span className="sr-only"> — {tr("hero.subtitle")}</span>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.18 }}
-            className="mt-7 max-w-sm text-sm leading-relaxed text-muted-foreground"
+          {/* Subtitle & Trophy Badge */}
+          <div
+            style={{ animationDelay: "0.18s" }}
+            className="enter-up mt-6 flex flex-col items-center lg:items-start gap-4"
           >
-            {tr("hero.subtitle")}
-          </motion.p>
+            <div className="flex items-center gap-3">
+              <p className="max-w-md text-sm sm:text-base font-medium leading-snug text-foreground/90 text-center lg:text-start">
+                {tr("hero.subtitle")}
+              </p>
+              <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-foreground/10 border border-border text-foreground">
+                <Trophy className="size-4 text-primary" />
+              </div>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.28 }}
-            className="mt-9 flex flex-wrap items-center gap-3"
-          >
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 rounded-full bg-gold py-2 pl-2 pr-6 font-bold uppercase tracking-[0.14em] text-gold-foreground transition-transform duration-300 hover:scale-[1.04]"
-            >
-              <span className="grid size-9 place-items-center rounded-full bg-foreground text-background transition-transform duration-300 group-hover:rotate-12">
-                <Play className="size-4 fill-current" />
-              </span>
-              <span className="text-xs">{tr("hero.workWithMe")}</span>
-            </a>
-            <button
-              onClick={downloadCV}
-              className="group inline-flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-xs font-bold uppercase tracking-[0.14em] text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:text-gold"
-            >
-              <Download className="size-4 transition-transform group-hover:-translate-y-0.5" />
-              {tr("hero.downloadCv")}
-            </button>
-          </motion.div>
+            {/* Primary actions: view work + download CV, inline on one line */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+              <a
+                href="#works"
+                className="group inline-flex items-center gap-3 rounded-xl bg-card px-7 py-3.5 shadow-lg border border-border transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <span className="grid size-7 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform duration-300 group-hover:rotate-12">
+                  <Play
+                    className={`size-3.5 fill-primary-foreground text-primary-foreground ${dir === "rtl" ? "me-0.5 rotate-180" : "ms-0.5"}`}
+                  />
+                </span>
+                <span className="whitespace-nowrap font-sans text-xs font-black tracking-[0.2em] text-card-foreground uppercase">
+                  {tr("hero.cta")}
+                </span>
+              </a>
+
+              <a
+                href="/cv/Mostafa_Samir_CV.pdf"
+                download="Mostafa_Samir_CV.pdf"
+                type="application/pdf"
+                className="group inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-3.5 shadow-lg border border-primary transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <span className="grid size-7 place-items-center rounded-xl bg-primary-foreground/15 text-primary-foreground transition-transform duration-300 group-hover:translate-y-0.5">
+                  <Download className="size-3.5" />
+                </span>
+                <span className="whitespace-nowrap font-sans text-xs font-black tracking-[0.2em] text-primary-foreground uppercase">
+                  {tr("hero.cv")}
+                </span>
+              </a>
+            </div>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.1, ease: [0.21, 0.5, 0.3, 1] }}
-          className="relative"
-        >
-          <img
+        {/* Right Column: 3D Isometric Art */}
+        <div style={{ animationDelay: "0.1s" }} className="enter-up relative">
+          <picture>
+            <source type="image/avif" srcSet={heroIsoAvif} />
+            <img
             src={heroIso}
-            alt="Isometric illustration of a marketplace workspace built from 3D letters"
+            alt="Mostafa Samir Full Stack Engineer Workspace"
             width={1200}
             height={1104}
-            className="mx-auto w-full max-w-2xl animate-float drop-shadow-2xl"
-          />
-        </motion.div>
-      </div>
-
-      {/* Marquee ticker */}
-      <div className="relative mt-14 overflow-hidden border-y border-border py-4">
-        <div className="flex w-max animate-marquee items-center gap-10">
-          {[...marqueeItems, ...marqueeItems, ...marqueeItems, ...marqueeItems].map(
-            (item, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-10 text-sm font-bold uppercase tracking-[0.3em] text-foreground/80"
-              >
-                {item}
-                <span className="size-2 rounded-full bg-gold" />
-              </span>
-            ),
-          )}
+            loading="eager"
+            decoding="sync"
+            fetchPriority="high"
+            draggable={false}
+            className="mx-auto w-full max-w-xl md:max-w-2xl animate-float drop-shadow-2xl"
+            />
+          </picture>
         </div>
       </div>
     </section>
