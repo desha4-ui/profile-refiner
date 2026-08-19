@@ -52,8 +52,22 @@
   --shadow-lift: var(--lift);
 
   --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-display: "Archivo", system-ui, sans-serif;
+  --font-display: "Oswald", "Archivo", system-ui, sans-serif;
+  --font-script: "Caveat", "Segoe Script", cursive;
   --font-arabic: "Cairo", "Tajawal", "Noto Sans Arabic", system-ui, sans-serif;
+
+  /* --- Type scale ---------------------------------------------------------
+   * Two extra micro steps below `text-xs`, so no component has to reach for
+   * an arbitrary `text-[9px]` value again. */
+  --text-3xs: 0.625rem;
+  --text-3xs--line-height: 1.4;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.45;
+
+  /* Letter-spacing steps used by labels, eyebrows and hero type. */
+  --tracking-label: 0.18em;
+  --tracking-eyebrow: 0.25em;
+  --tracking-hero: 0.35em;
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-marquee: marquee 28s linear infinite;
