@@ -11,9 +11,12 @@
  *  - any response carrying `Set-Cookie`: `private, no-store` — a shared cache
  *    must never hand one visitor's cookie to another.
  *  - `/assets/*`, `/_build/*`: content-hashed by Vite → immutable for a year.
- *  - static media by path (lottie/wasm/images/projects/api/fonts/cv/icons) and
- *    by content type (image/font/video/audio/wasm): long TTL + SWR, since the
- *    filenames are stable but the files can be replaced on a deploy.
+ *  - static media by path (lottie/wasm/images/projects/api/fonts/icons) and
+ *    by content type (image/font/video/audio/wasm): 1 day + a *bounded* SWR
+ *    window, since the filenames are stable but the files can be replaced on
+ *    a deploy — an unbounded SWR would let a year-old file be served.
+ *  - crawler/config files and the CV (robots.txt, manifest, /cv/*): short TTL,
+ *    they are edited far more often than they are re-hashed.
  *  - HTML documents: `no-cache` (store, but always revalidate) so a deploy is
  *    picked up immediately while still allowing 304s.
  *  - everything else: left untouched.
@@ -21,9 +24,14 @@
 
 const YEAR = 31_536_000;
 const DAY = 86_400;
+const HOUR = 3_600;
+const WEEK = 604_800;
 
 const IMMUTABLE = `public, max-age=${YEAR}, immutable`;
-const MEDIA = `public, max-age=${DAY}, stale-while-revalidate=${YEAR}`;
+/** Stable filenames, replaceable on deploy: fresh for a day, bounded SWR. */
+const MEDIA = `public, max-age=${DAY}, stale-while-revalidate=${WEEK}`;
+/** Frequently edited, non-hashed text/documents. */
+const SHORT = `public, max-age=${HOUR}, stale-while-revalidate=${DAY}`;
 const DOCUMENT = "public, no-cache, must-revalidate";
 const PRIVATE_DOCUMENT = "private, no-cache, must-revalidate";
 const NO_STORE = "private, no-store";
@@ -41,7 +49,6 @@ const MEDIA_PREFIXES = [
   "/projects/",
   "/api/",
   "/fonts/",
-  "/cv/",
 ];
 
 const MEDIA_FILES = new Set([
@@ -49,9 +56,15 @@ const MEDIA_FILES = new Set([
   "/favicon.png",
   "/favicon.svg",
   "/apple-touch-icon.png",
+]);
+
+/** Short-TTL, non-hashed files that are edited between deploys. */
+const SHORT_PREFIXES = ["/cv/"];
+const SHORT_FILES = new Set([
   "/robots.txt",
   "/manifest.json",
   "/site.webmanifest",
+  "/sitemap.xml",
 ]);
 
 /** Content types that are always static bytes, whatever the URL looks like. */
@@ -86,6 +99,10 @@ function isMedia(pathname: string, contentType: string | null): boolean {
   return false;
 }
 
+function isShortLived(pathname: string): boolean {
+  return SHORT_FILES.has(pathname) || SHORT_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
 export function cacheControlFor(
   pathname: string,
   contentType: string | null,
@@ -94,6 +111,7 @@ export function cacheControlFor(
   if (isServerFnPath(pathname) || isApiRoute(pathname)) return NO_STORE;
 
   if (HASHED_PREFIXES.some((p) => pathname.startsWith(p))) return IMMUTABLE;
+  if (isShortLived(pathname)) return SHORT;
   if (isMedia(pathname, contentType)) return MEDIA;
 
   if (contentType?.includes("text/html")) {
