@@ -170,6 +170,12 @@ export function withCacheHeaders(request: Request, response: Response): Response
   return applyHeaders(request, response, (headers) => {
     headers.set("Cache-Control", value);
     addVary(headers, "Accept-Encoding");
+    // The document policy (public vs private) is derived from the request's
+    // credentials, so a shared cache must key on them — otherwise one
+    // visitor's variant can be replayed to another.
+    if (value === DOCUMENT || value === PRIVATE_DOCUMENT) {
+      addVary(headers, "Cookie");
+    }
   });
 }
 
