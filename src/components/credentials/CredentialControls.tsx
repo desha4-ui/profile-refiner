@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EASE } from "@/lib/motion";
 import { useI18n } from "@/lib/i18n";
